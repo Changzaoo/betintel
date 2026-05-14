@@ -12,6 +12,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    headers: {
+      // Allows Firebase signInWithPopup to work without COOP warnings
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

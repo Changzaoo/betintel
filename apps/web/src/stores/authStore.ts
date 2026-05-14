@@ -34,8 +34,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   init: () => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        set({ user, profile: snap.data() as UserProfile ?? null, loading: false });
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          set({ user, profile: snap.data() as UserProfile ?? null, loading: false });
+        } catch {
+          // Firestore rules not deployed yet — user still authenticated
+          set({ user, profile: null, loading: false });
+        }
       } else {
         set({ user: null, profile: null, loading: false });
       }
@@ -57,9 +62,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ error: null, loading: true });
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      await ensureUserProfile(result.user);
-    } catch {
-      set({ error: 'Erro ao entrar com Google', loading: false });
+      await ensureUserProfile(result.user).catch(() => null); // non-fatal if Firestore rules not deployed
+    } catch (err: unknown) {
+      const msg = err instanceof Error && err.message.includes('popup-closed')
+        ? 'Login cancelado'
+        : 'Erro ao entrar com Google';
+      set({ error: msg, loading: false });
     }
   },
 
@@ -100,5 +108,8 @@ async function ensureUserProfile(user: User, name?: string) {
       createdAt: serverTimestamp(),
       lastLoginAt: serverTimestamp(),
     });
+  } else {
+    // Update last login timestamp silently
+    await setDoc(ref, { lastLoginAt: serverTimestamp() }, { merge: true }).catch(() => null);
   }
 }
