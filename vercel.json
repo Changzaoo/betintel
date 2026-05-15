@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd apps/web && npx vite build",
+  "buildCommand": "npx vite build --config apps/web/vite.config.ts",
   "installCommand": "npm install",
   "outputDirectory": "apps/web/dist",
   "rewrites": [
