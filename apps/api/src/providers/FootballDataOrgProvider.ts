@@ -66,48 +66,33 @@ export class FootballDataOrgProvider implements SportsDataProvider {
     const dateFrom = today.toISOString().split('T')[0];
     const dateTo = nextWeek.toISOString().split('T')[0];
 
+    const params: Record<string, unknown> = { dateFrom, dateTo, status: 'SCHEDULED' };
+
     if (filters?.leagueId && LEAGUE_MAP[filters.leagueId]) {
-      const fdId = LEAGUE_MAP[filters.leagueId].fdId;
-      const data = await this.get<FDMatchList>(`/competitions/${fdId}/matches`, { dateFrom, dateTo, status: 'SCHEDULED' });
-      return data.matches.map((m) => this.mapMatch(m, filters.leagueId!));
+      params.competitions = LEAGUE_MAP[filters.leagueId].fdId;
+    } else {
+      params.competitions = Object.values(LEAGUE_MAP).map((l) => l.fdId).join(',');
     }
 
-    // Buscar todas as ligas suportadas em paralelo
-    const results = await Promise.allSettled(
-      Object.entries(LEAGUE_MAP).map(([leagueId, l]) =>
-        this.get<FDMatchList>(`/competitions/${l.fdId}/matches`, { dateFrom, dateTo, status: 'SCHEDULED' })
-          .then((d) => d.matches.map((m) => this.mapMatch(m, Number(leagueId))))
-      )
-    );
-
-    const fixtures: Fixture[] = [];
-    for (const r of results) {
-      if (r.status === 'fulfilled') fixtures.push(...r.value);
-    }
-    return fixtures.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const data = await this.get<FDMatchList>('/matches', params);
+    return data.matches
+      .map((m) => this.mapMatch(m, FD_TO_LEAGUE_ID[m.competition?.code ?? ''] ?? 0))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 
   async getTodayFixtures(filters?: FixtureFilters): Promise<Fixture[]> {
     const today = new Date().toISOString().split('T')[0];
 
+    const params: Record<string, unknown> = { dateFrom: today, dateTo: today };
+
     if (filters?.leagueId && LEAGUE_MAP[filters.leagueId]) {
-      const fdId = LEAGUE_MAP[filters.leagueId].fdId;
-      const data = await this.get<FDMatchList>(`/competitions/${fdId}/matches`, { dateFrom: today, dateTo: today });
-      return data.matches.map((m) => this.mapMatch(m, filters.leagueId!));
+      params.competitions = LEAGUE_MAP[filters.leagueId].fdId;
+    } else {
+      params.competitions = Object.values(LEAGUE_MAP).map((l) => l.fdId).join(',');
     }
 
-    const results = await Promise.allSettled(
-      Object.entries(LEAGUE_MAP).map(([leagueId, l]) =>
-        this.get<FDMatchList>(`/competitions/${l.fdId}/matches`, { dateFrom: today, dateTo: today })
-          .then((d) => d.matches.map((m) => this.mapMatch(m, Number(leagueId))))
-      )
-    );
-
-    const fixtures: Fixture[] = [];
-    for (const r of results) {
-      if (r.status === 'fulfilled') fixtures.push(...r.value);
-    }
-    return fixtures;
+    const data = await this.get<FDMatchList>('/matches', params);
+    return data.matches.map((m) => this.mapMatch(m, FD_TO_LEAGUE_ID[m.competition?.code ?? ''] ?? 0));
   }
 
   async getFixtureById(fixtureId: number): Promise<Fixture | null> {
