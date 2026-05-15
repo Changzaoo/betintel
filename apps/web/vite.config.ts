@@ -13,13 +13,24 @@ export default defineConfig({
   server: {
     port: 5173,
     headers: {
-      // Allows Firebase signInWithPopup to work without COOP warnings
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
+      },
+    },
+  },
+  build: {
+    outDir: 'dist',
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+        },
       },
     },
   },
