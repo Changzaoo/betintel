@@ -1,7 +1,4 @@
 {
-  "installCommand": "cd ../.. && npm install",
-  "buildCommand": "../../node_modules/.bin/vite build --config ../web/vite.config.ts --outDir ../api/public",
-  "outputDirectory": "public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
