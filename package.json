@@ -7,12 +7,14 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
-    "dev:web": "npm run dev --workspace=apps/web",
-    "dev:api": "npm run dev --workspace=apps/api",
-    "build": "npm run build --workspaces",
-    "build:web": "npm run build --workspace=apps/web",
-    "build:api": "npm run build --workspace=apps/api",
+    "dev": "npm run dev --workspace=@betintel/web",
+    "dev:web": "npm run dev --workspace=@betintel/web",
+    "dev:api": "npm run dev --workspace=@betintel/api",
+    "dev:all": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "build": "npm run build:web",
+    "build:web": "npm run build --workspace=@betintel/web",
+    "build:api": "npm run build --workspace=@betintel/api",
+    "preview": "npm run preview --workspace=@betintel/web",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
