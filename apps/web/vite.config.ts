@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@betintel/shared': path.resolve(__dirname, '../../packages/shared/src'),
+      '@betintel/shared': path.resolve(__dirname, './src/shared'),
     },
   },
   server: {

@@ -17,7 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@betintel/shared": ["../../packages/shared/src"],
+      "@betintel/shared": ["./src/shared"],
       "@/*": ["src/*"]
     }
   },
